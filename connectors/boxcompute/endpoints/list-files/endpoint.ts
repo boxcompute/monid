@@ -1,6 +1,5 @@
-import { z } from "zod";
 import { defineEndpoint, UsageModelKind } from "@shared/core";
-import { zSandboxId, zWorkspacePath } from "../../schema/common.ts";
+import { zListFilesBody } from "./schema/inputs.ts";
 
 /**
  * /list-files — one page of a directory in an owned VM (upstream:
@@ -8,23 +7,6 @@ import { zSandboxId, zWorkspacePath } from "../../schema/common.ts";
  * opaque page token, not a URL: it goes back in as `cursor` on this same
  * endpoint with the same path.
  */
-export const zListFilesBody = z.object({
-    sandboxId: zSandboxId.describe(
-        "The id of a VM YOU OWN (from /create-sandbox or /list-sandboxes).",
-    ),
-    path: zWorkspacePath.describe(
-        "The directory to list, an absolute path inside /workspace, e.g. " +
-            "/workspace or /workspace/src.",
-    ),
-    pageSize: z.number().int().min(1).max(1000).describe(
-        "Entries per page. Default 1000.",
-    ).optional(),
-    cursor: z.string().min(1).max(4096).describe(
-        "The nextCursor of the previous page, unchanged, to read the next " +
-            "one.",
-    ).optional(),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "List Files",

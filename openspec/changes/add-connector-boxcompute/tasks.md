@@ -36,8 +36,9 @@
       account identifiers, and minimize them.
 - [x] 4.2 Build the synthetic chains for running, slow-boot, busy-delete
       and cost-window cases.
-- [x] 4.3 `connector.test.ts`: every endpoint, the ownership 404s, strict
-      inputs, and the provision and release marks.
+- [x] 4.3 `endpoints/<e>/endpoint.test.ts` for every endpoint: the happy
+      path, a provider error, the ownership 404s, a schema gate with its
+      passing twin, and the provision and release marks.
 - [x] 4.4 `resources/vm/resource.test.ts`: verify, release, refresh, and
       reconcile (live, windowed, deleted, refused reads).
 - [ ] 4.5 Enable the two 204 tests once #199 lands.

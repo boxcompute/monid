@@ -1,18 +1,11 @@
-import { z } from "zod";
 import { defineEndpoint, UsageModelKind } from "@shared/core";
-import { zSandboxId } from "../../schema/common.ts";
+import { zStopSandboxBody } from "./schema/inputs.ts";
 
 /**
  * /stop-sandbox — stop a running VM now, keeping its files (upstream:
  * `POST /api/v2/sandboxes/{id}/stop`). Never wakes a stopped VM; `stopped`
  * is false when it was not running.
  */
-export const zStopSandboxBody = z.object({
-    sandboxId: zSandboxId.describe(
-        "The id of a VM YOU OWN (from /create-sandbox or /list-sandboxes).",
-    ),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "Stop VM",

@@ -1,6 +1,5 @@
-import { z } from "zod";
 import { defineEndpoint, UsageModelKind } from "@shared/core";
-import { zSandboxId } from "../../schema/common.ts";
+import { zGetSandboxBody } from "./schema/inputs.ts";
 
 /**
  * /get-sandbox — one owned VM's live record (upstream:
@@ -8,12 +7,6 @@ import { zSandboxId } from "../../schema/common.ts";
  * binding: the pre-gate answers the uniform 404 for a VM this workspace
  * does not own, and reading never wakes the VM.
  */
-export const zGetSandboxBody = z.object({
-    sandboxId: zSandboxId.describe(
-        "The id of a VM YOU OWN (from /create-sandbox or /list-sandboxes).",
-    ),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "Get VM",

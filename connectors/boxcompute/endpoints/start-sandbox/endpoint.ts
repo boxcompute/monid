@@ -1,18 +1,11 @@
-import { z } from "zod";
 import { defineEndpoint, UsageModelKind } from "@shared/core";
-import { zSandboxId } from "../../schema/common.ts";
+import { zStartSandboxBody } from "./schema/inputs.ts";
 
 /**
  * /start-sandbox — wake a stopped VM (upstream:
  * `POST /api/v2/sandboxes/{id}/start`). BoxCompute answers once it runs:
  * about 30 s from cold (33 s measured 2026-10-26).
  */
-export const zStartSandboxBody = z.object({
-    sandboxId: zSandboxId.describe(
-        "The id of a VM YOU OWN (from /create-sandbox or /list-sandboxes).",
-    ),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "Start VM",

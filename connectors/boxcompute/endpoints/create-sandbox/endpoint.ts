@@ -1,6 +1,6 @@
-import { z } from "zod";
 import { defineEndpoint, type Json, UsageModelKind } from "@shared/core";
 import { zSize } from "../../schema/common.ts";
+import { zCreateSandboxBody } from "./schema/inputs.ts";
 
 /**
  * /create-sandbox — create a VM and wait for it to run (upstream:
@@ -19,21 +19,6 @@ import { zSize } from "../../schema/common.ts";
  *     The dead slot is deleted, best effort, and the run answers 429 with
  *     nothing provisioned.
  */
-export const zCreateSandboxBody = z.object({
-    size: zSize.describe(
-        "small: 0.5 vCPU, 1 GiB RAM, $0.05/hour while running (scripts, " +
-            "data work, small servers). large: 1.5 vCPU, 3 GiB RAM, " +
-            "$0.15/hour (browsers, builds, heavier apps).",
-    ).default("small"),
-    name: z.string().min(1).max(80).regex(/\S/).describe(
-        "A label for the VM, shown by /list-sandboxes.",
-    ).optional(),
-    blockNetwork: z.boolean().describe(
-        "true creates the VM without a network interface: no internet at " +
-            "all, and no preview URLs. Default false (outbound internet).",
-    ).optional(),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "Create VM",
@@ -62,7 +47,19 @@ export default defineEndpoint({
     },
     endpoint: "/create-sandbox",
     request: { method: "POST", path: "/api/v2/sandboxes" },
-    input: { schema: { body: zCreateSandboxBody } },
+    input: {
+        schema: {
+            // small and large only: xl and xxl depend on the account's plan
+            body: zCreateSandboxBody.extend({
+                size: zSize.describe(
+                    "small: 0.5 vCPU, 1 GiB RAM, $0.05/hour while running " +
+                        "(scripts, data work, small servers). large: 1.5 " +
+                        "vCPU, 3 GiB RAM, $0.15/hour (browsers, builds, " +
+                        "heavier apps).",
+                ).default("small"),
+            }),
+        },
+    },
     timeouts: { requestMs: 30_000, runMs: 180_000 },
     resources: {
         provisions: [{

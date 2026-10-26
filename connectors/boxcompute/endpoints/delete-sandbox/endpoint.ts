@@ -1,6 +1,5 @@
-import { z } from "zod";
 import { defineEndpoint, UsageModelKind } from "@shared/core";
-import { zSandboxId } from "../../schema/common.ts";
+import { zDeleteSandboxBody } from "./schema/inputs.ts";
 
 /**
  * /delete-sandbox — delete an owned VM and its disk (upstream:
@@ -13,10 +12,6 @@ import { zSandboxId } from "../../schema/common.ts";
  * and counts as done. A 409 (still stopping or in use) is relayed as data:
  * no mark, and the VM stays owned, so the caller can retry.
  */
-export const zDeleteSandboxBody = z.object({
-    sandboxId: zSandboxId.describe("The id of a VM YOU OWN to delete."),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "Delete VM",

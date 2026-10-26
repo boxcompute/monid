@@ -1,6 +1,6 @@
-import { z } from "zod";
 import { defineEndpoint, type Json, UsageModelKind } from "@shared/core";
-import { zSandboxId, zWorkspacePath } from "../../schema/common.ts";
+import { zWorkspacePath } from "../../schema/common.ts";
+import { zRunCommandBody } from "./schema/inputs.ts";
 
 /**
  * /run-command — run one program in an owned VM and wait for it (upstream:
@@ -12,32 +12,6 @@ import { zSandboxId, zWorkspacePath } from "../../schema/common.ts";
  * `timeoutSeconds` at 240 so one call stays inside the request timeout,
  * which also covers waking a stopped VM (about 30 s).
  */
-export const zRunCommandBody = z.object({
-    sandboxId: zSandboxId.describe(
-        "The id of a VM YOU OWN (from /create-sandbox or /list-sandboxes).",
-    ),
-    argv: z.array(z.string().min(1).max(8192)).min(1).max(64).describe(
-        "The program and its arguments, run directly WITHOUT a shell, e.g. " +
-            '["python3", "main.py"]. For pipes, redirects, globs or several ' +
-            'commands, use ["sh", "-c", "<script>"].',
-    ),
-    cwd: zWorkspacePath.describe(
-        "Working directory, an absolute path inside /workspace. Default " +
-            "/workspace.",
-    ).optional(),
-    env: z.record(z.string(), z.string()).describe(
-        "Extra environment variables for this command only (at most 64).",
-    ).optional(),
-    timeoutSeconds: z.number().int().min(1).max(240).describe(
-        "Seconds before the command is killed (timedOut: true). Default " +
-            "120, at most 240.",
-    ).optional(),
-    maxOutputBytes: z.number().int().min(1).max(1_048_576).describe(
-        "Cap on each of stdout and stderr; longer output is cut " +
-            "(stdoutTruncated / stderrTruncated). Default 262144.",
-    ).optional(),
-}).strict();
-
 export default defineEndpoint({
     meta: {
         displayName: "Run Command",
@@ -67,7 +41,21 @@ export default defineEndpoint({
     endpoint: "/run-command",
     request: { method: "POST", path: "/api/v2/sandboxes/{id}/execute" },
     input: {
-        schema: { body: zRunCommandBody },
+        schema: {
+            body: zRunCommandBody.extend({
+                // the file API's path form: no . or .. segments, so the
+                // working directory cannot climb out of /workspace
+                cwd: zWorkspacePath.describe(
+                    "Working directory, an absolute path inside /workspace. " +
+                        "Default /workspace.",
+                ).optional(),
+                timeoutSeconds: zRunCommandBody.shape.timeoutSeconds.unwrap()
+                    .max(240).describe(
+                        "Seconds before the command is killed (timedOut: " +
+                            "true). Default 120, at most 240.",
+                    ).optional(),
+            }),
+        },
         toRequest: ({ data }) => {
             const { sandboxId, ...command } = data.input.body as Record<
                 string,
